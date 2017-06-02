@@ -62,6 +62,7 @@ class CurrencySymbols:
 class CurrencyConverter:
     """
     This class represent currency converter which takes values and convert them to data for JSON exporter.
+    :param symbols_dictionary - dictionary of currency symbols
     :param values - values from input
     """
     def __init__(self, values, symbols_dictionary):
@@ -96,6 +97,8 @@ class CurrencyConverter:
     def __set_input_currency(self):
         """
         This 'private' method sets input currency code.
+        If there is match between input_currency and some symbol form dictionary
+        then function sets the symbol as an input_currency.
         :return: code of given input currency
         """
         input_currency = self.__symbols_dictionary.get(self.__values.input_currency)
@@ -105,7 +108,7 @@ class CurrencyConverter:
 
     def __set_output_currency(self):
         """
-        This 'private' method sets output currency code.
+        This 'private' method sets output currency code (same as self.__set_input_currency())
         :return: code of given output currency
         """
         output_currency = self.__symbols_dictionary.get(self.__values.output_currency)
@@ -115,14 +118,21 @@ class CurrencyConverter:
 
 
 class JSONExporter:
-    def export(self, path, data):
+    """
+    This class represents JSON exporter.
+    :param path: path to new JSON file
+    :param data: data to export
+    """
+    def __init__(self, path, data):
+        self.__path = path
+        self.__data = data
+
+    def export(self):
         """
         Function which export data to JSON file with given path.
-        :param path: path to new JSON file
-        :param data: data to export
         """
-        with open(path, 'w') as outfile:
-            dump(data, outfile, sort_keys=True, indent=4)
+        with open(self.__path, 'w') as outfile:
+            dump(self.__data, outfile, sort_keys=True, indent=4)
 
 
 class Program:
@@ -135,7 +145,7 @@ class Program:
             values = Parser().try_parse()  # parse input into values
             symbols_dictionary = CurrencySymbols().get_symbols_dictionary()  # create currency symbols dictionary
             data = CurrencyConverter(values, symbols_dictionary).convert()  # convert currencies
-            JSONExporter().export('data.json', data)  # export data
+            JSONExporter('data.json', data).export()  # export data
         except RatesNotAvailableError as exception:
             print(exception)
         except ValueError as exception:
